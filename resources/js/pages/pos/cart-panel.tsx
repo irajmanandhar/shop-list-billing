@@ -1,10 +1,10 @@
 // import { CartItem, Product } from '@/types';
+import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2 } from 'lucide-react';
 
 interface CartItem {
-    product: { id: number; name: string; price: string };
+    product: { id: number; name: string; price: string; stock: number };
     quantity: number;
 }
 

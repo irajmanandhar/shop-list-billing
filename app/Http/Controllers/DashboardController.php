@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,33 +19,58 @@ class DashboardController extends Controller
             ->where('status', 'completed')
             ->get();
 
-        //top products
+        $revenueHistory = Sale::where('status', 'completed')
+            ->whereDate('created_at', '>=', $today->copy()->subDays(6))
+            ->selectRaw('DATE(created_at) as date, SUM(total) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $revenueHistory = collect(range(6, 0))->map(function (int $offset) use ($revenueHistory, $today): array {
+            $day = $today->copy()->subDays($offset);
+            $row = $revenueHistory->firstWhere('date', $day->toDateString());
+
+            return [
+                'date' => $day->format('D'),
+                'total' => $row ? $row->total : '0.00',
+            ];
+        });
+
+        // top products
         $topProduct = SaleItem::select(
             'product_name',
             DB::raw('SUM(quantity) as total_qty'),
             DB::raw('SUM(subtotal) as total_revenue')
         )
-            ->whereHas('sale', fn($q) => $q->whereDate('created_at', $today)->where('status', 'completed'))
+            ->whereHas('sale', fn ($q) => $q->whereDate('created_at', $today)->where('status', 'completed'))
             ->groupBy('product_name')
             ->orderByDesc('total_qty')
             ->limit(5)
             ->get();
 
         // recent sales
-        $recentSales =  Sale::with('items')
+        $recentSales = Sale::with('items')
             ->latest()
             ->limit(10)
             ->get();
 
+        // low stock
+        $lowStockProducts = Product::where('stock', '<=', 5)
+            ->orderBy('stock')
+            ->limit(6)
+            ->get(['id', 'name', 'stock', 'is_active']);
+
         return Inertia::render('dashboard', [
             'stats' => [
-                'today_revenue' => number_format((float) $todaySales->sum('total'), 2),
+                'today_revenue' => $todaySales->sum('total'),
                 'today_transactions' => $todaySales->count(),
                 'total_products' => Product::where('is_active', true)->count(),
-                'low_stock_count' => Product::where('stock', '<=', 5)->where('stock', '>', 0)->count(),
+                'low_stock_count' => Product::where('stock', '<=', 5)->count(),
             ],
+            'revenue_history' => $revenueHistory,
             'top_products' => $topProduct,
             'recent_sales' => $recentSales,
+            'low_stock_products' => $lowStockProducts,
         ]);
     }
 }

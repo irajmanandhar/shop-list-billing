@@ -1,5 +1,5 @@
 import { useReducer, useMemo } from 'react';
-import { CartItem, Product } from '@/types';
+import type { CartItem, Product } from '@/types';
 
 type CartAction =
     | { type: 'ADD'; product: Product }
@@ -13,6 +13,7 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
             const existing = state.find(
                 (i) => i.product.id === action.product.id,
             );
+
             if (existing) {
                 return state.map((i) =>
                     i.product.id === action.product.id
@@ -20,6 +21,7 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
                         : i,
                 );
             }
+
             return [...state, { product: action.product, quantity: 1 }];
         }
         case 'REMOVE':
@@ -29,6 +31,7 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
             if (action.quantity <= 0) {
                 return state.filter((i) => i.product.id !== action.productId);
             }
+
             return state.map((i) =>
                 i.product.id === action.productId
                     ? { ...i, quantity: action.quantity }

@@ -1,16 +1,16 @@
-import { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import type { CartItem } from '@/types';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import type { CartItem } from '@/types';
 
 interface Props {
     open: boolean;
@@ -37,8 +37,10 @@ export default function CheckoutDialog({
     function handleCheckout() {
         if (cash < subtotal) {
             setError('Cash amount is less than the total.');
+
             return;
         }
+
         setError(null);
         setProcessing(true);
 

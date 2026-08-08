@@ -1,12 +1,12 @@
-import { Input } from '@/components/ui/input';
-import { CartItem, Product } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { LayoutGrid, Search } from 'lucide-react';
 import { useState } from 'react';
-import ProductGrid from './product-grid';
+import { Input } from '@/components/ui/input';
+import type { Product } from '@/types';
 import CartPanel from './cart-panel';
-import { useCart } from './use-cart';
 import CheckoutDialog from './checkout-dialog';
+import ProductGrid from './product-grid';
+import { useCart } from './use-cart';
 
 interface Props {
     products: Product[];
@@ -16,7 +16,7 @@ export default function PosIndex({ products }: Props) {
     const [search, setSearch] = useState('');
     const { items, subtotal, addItem, removeItem, setQuantity, clear } =
         useCart();
-        const [showCheckout, setShowCheckout] = useState(false);
+    const [showCheckout, setShowCheckout] = useState(false);
 
     const filtered = products.filter(
         (p) =>

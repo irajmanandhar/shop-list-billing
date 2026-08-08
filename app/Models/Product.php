@@ -16,7 +16,7 @@ class Product extends Model
             'is_active' => 'boolean',
         ];
     }
-    
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

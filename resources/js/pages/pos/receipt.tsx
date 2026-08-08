@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
-import type { Sale } from '@/types';
-import { Button } from '@/components/ui/button';
 import { Printer, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { Sale } from '@/types';
 
 interface Props {
     sale: Sale;
@@ -71,7 +71,7 @@ export default function Receipt({ sale }: Props) {
                     </div>
                 </div>
 
-                <div className="text-center text-xs text-muted-foreground mt-4">
+                <div className="mt-4 text-center text-xs text-muted-foreground">
                     Thank you for your purchase!
                 </div>
             </div>

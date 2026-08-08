@@ -1,18 +1,18 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
-import { Category } from '@/types';
-import { Button } from '@/components/ui/button';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import InputError from '@/components/input-error';
+import { Label } from '@/components/ui/label';
+import type { Category } from '@/types';
 
 // Create a TypeScript type intersection combining Category with an added products_count property
 type CategoryWithCount = Category & { products_count: number };
@@ -56,6 +56,7 @@ export default function CategoryIndex({ categories }: Props) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
+
         if (editing) {
             put(`/categories/${editing.id}`, {
                 onSuccess: () => {
@@ -78,9 +79,14 @@ export default function CategoryIndex({ categories }: Props) {
             toast.error(
                 `Cannot delete "${cat.name}" – it has ${cat.products_count} product(s). Reassign them first.`,
             );
+
             return;
         }
-        if (!confirm(`Delete category "${cat.name}"?`)) return;
+
+        if (!confirm(`Delete category "${cat.name}"?`)) {
+            return;
+        }
+
         router.delete(`/categories/${cat.id}`, {
             onSuccess: () => toast.success('Category deleted.'),
         });
