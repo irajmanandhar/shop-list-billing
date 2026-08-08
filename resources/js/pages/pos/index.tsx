@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { CartItem, Product } from '@/types';
-import { Head } from '@inertiajs/react';
-import { LayoutGrid, Link, Search } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { LayoutGrid, Search } from 'lucide-react';
 import { useState } from 'react';
 import ProductGrid from './product-grid';
 import CartPanel from './cart-panel';
