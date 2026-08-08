@@ -1,5 +1,5 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Pencil, Plus, ShoppingCart, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import InputError from '@/components/input-error';
@@ -159,6 +159,18 @@ export default function CategoryIndex({ categories }: Props) {
                                             onClick={() => handleDelete(cat)}
                                         >
                                             <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            asChild
+                                        >
+                                            <Link
+                                                href={`/pos?category=${cat.id}`}
+                                                title={`Sell ${cat.name} in POS`}
+                                            >
+                                                <ShoppingCart className="h-4 w-4 text-emerald-600" />
+                                            </Link>
                                         </Button>
                                     </td>
                                 </tr>

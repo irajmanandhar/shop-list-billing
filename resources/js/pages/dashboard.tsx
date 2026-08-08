@@ -4,6 +4,7 @@ import {
     ArrowRight,
     BadgeCheck,
     CircleDollarSign,
+    Layers,
     Package,
     Receipt,
     ShoppingBag,
@@ -30,6 +31,11 @@ interface RevenuePoint {
     total: string;
 }
 
+interface CategoryRevenue {
+    category_name: string;
+    total: string;
+}
+
 interface LowStockProduct {
     id: number;
     name: string;
@@ -41,6 +47,7 @@ interface Props {
     stats: Stats;
     revenue_history: RevenuePoint[];
     top_products: TopProduct[];
+    category_revenue: CategoryRevenue[];
     recent_sales: Sale[];
     low_stock_products: LowStockProduct[];
 }
@@ -55,6 +62,7 @@ export default function Dashboard({
     stats,
     revenue_history,
     top_products,
+    category_revenue,
     recent_sales,
     low_stock_products,
 }: Props) {
@@ -123,7 +131,10 @@ export default function Dashboard({
                         data={recent_sales}
                         className="xl:col-span-2"
                     />
-                    <LowStock items={low_stock_products} />
+                    <div className="space-y-6">
+                        <LowStock items={low_stock_products} />
+                        <CategoryRevenueCard data={category_revenue} />
+                    </div>
                 </div>
             </div>
         </>
@@ -341,6 +352,68 @@ function TopProducts({
                                     />
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function CategoryRevenueCard({
+    data,
+    className = '',
+}: {
+    data: CategoryRevenue[];
+    className?: string;
+}) {
+    const max = Math.max(...data.map((c) => Number(c.total)), 1);
+    const barTones = [
+        'from-emerald-500 to-emerald-400',
+        'from-teal-500 to-teal-400',
+        'from-lime-500 to-lime-400',
+        'from-cyan-500 to-cyan-400',
+        'from-emerald-600 to-teal-500',
+    ];
+
+    return (
+        <div
+            className={`rounded-2xl border bg-card p-5 shadow-sm ${className}`}
+        >
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="font-bold">Revenue by Category</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Today's sales split
+                    </p>
+                </div>
+                <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400">
+                    <Layers className="size-4.5" />
+                </div>
+            </div>
+            <div className="mt-4 space-y-3.5">
+                {data.length === 0 && (
+                    <p className="py-8 text-center text-sm text-muted-foreground">
+                        No category sales yet today.
+                    </p>
+                )}
+                {data.map((item, index) => (
+                    <div key={item.category_name}>
+                        <div className="flex items-baseline justify-between text-sm">
+                            <p className="truncate font-medium">
+                                {item.category_name}
+                            </p>
+                            <p className="shrink-0 font-bold">
+                                {currency(item.total)}
+                            </p>
+                        </div>
+                        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
+                            <div
+                                className={`h-full rounded-full bg-gradient-to-r ${barTones[index % barTones.length]}`}
+                                style={{
+                                    width: `${Math.max((Number(item.total) / max) * 100, 4)}%`,
+                                }}
+                            />
                         </div>
                     </div>
                 ))}

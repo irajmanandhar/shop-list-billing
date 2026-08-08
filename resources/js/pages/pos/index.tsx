@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { LayoutGrid, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import type { Product } from '@/types';
+import type { Category, Product } from '@/types';
 import CartPanel from './cart-panel';
 import CheckoutDialog from './checkout-dialog';
 import ProductGrid from './product-grid';
@@ -10,18 +10,37 @@ import { useCart } from './use-cart';
 
 interface Props {
     products: Product[];
+    categories: Category[];
 }
 
-export default function PosIndex({ products }: Props) {
+function initialCategory(
+    params: URLSearchParams,
+    categories: Category[],
+): number | null {
+    const id = Number(params.get('category'));
+
+    return categories.some((c) => c.id === id) ? id : null;
+}
+
+export default function PosIndex({ products, categories }: Props) {
     const [search, setSearch] = useState('');
+    const [activeCategory, setActiveCategory] = useState<number | null>(() =>
+        initialCategory(
+            new URLSearchParams(window.location.search),
+            categories,
+        ),
+    );
     const { items, subtotal, addItem, removeItem, setQuantity, clear } =
         useCart();
     const [showCheckout, setShowCheckout] = useState(false);
 
     const filtered = products.filter(
         (p) =>
-            p.name.toLowerCase().includes(search.toLowerCase()) ||
-            p.category.name.toLocaleLowerCase().includes(search.toLowerCase()),
+            (activeCategory === null || p.category_id === activeCategory) &&
+            (p.name.toLowerCase().includes(search.toLowerCase()) ||
+                p.category.name
+                    .toLocaleLowerCase()
+                    .includes(search.toLowerCase())),
     );
 
     return (
@@ -46,6 +65,34 @@ export default function PosIndex({ products }: Props) {
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
+                </div>
+                {/* Category chips */}
+                <div className="flex items-center gap-2 overflow-x-auto border-b px-4 py-2.5">
+                    <button
+                        type="button"
+                        onClick={() => setActiveCategory(null)}
+                        className={`shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                            activeCategory === null
+                                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
+                                : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        }`}
+                    >
+                        All
+                    </button>
+                    {categories.map((category) => (
+                        <button
+                            key={category.id}
+                            type="button"
+                            onClick={() => setActiveCategory(category.id)}
+                            className={`shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                                activeCategory === category.id
+                                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
+                                    : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                            }`}
+                        >
+                            {category.name}
+                        </button>
+                    ))}
                 </div>
                 {/* Main area */}
                 <div className="flex flex-1 overflow-hidden">

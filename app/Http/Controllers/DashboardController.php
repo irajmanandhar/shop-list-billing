@@ -48,6 +48,21 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // revenue by category
+        $categoryRevenue = SaleItem::select(
+            'categories.name as category_name',
+            DB::raw('SUM(sales_items.subtotal) as total')
+        )
+            ->join('sales', 'sales.id', '=', 'sales_items.sale_id')
+            ->join('products', 'products.id', '=', 'sales_items.product_id')
+            ->join('categories', 'categories.id', '=', 'products.category_id')
+            ->where('sales.status', 'completed')
+            ->whereDate('sales.created_at', $today)
+            ->groupBy('categories.name')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
         // recent sales
         $recentSales = Sale::with('items')
             ->latest()
@@ -69,6 +84,7 @@ class DashboardController extends Controller
             ],
             'revenue_history' => $revenueHistory,
             'top_products' => $topProduct,
+            'category_revenue' => $categoryRevenue,
             'recent_sales' => $recentSales,
             'low_stock_products' => $lowStockProducts,
         ]);
