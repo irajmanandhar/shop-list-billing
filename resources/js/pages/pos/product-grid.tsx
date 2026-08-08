@@ -26,7 +26,7 @@ export default function ProductGrid({ products, onAdd }: Props) {
                     <button
                         key={product.id}
                         onClick={() => onAdd(product)}
-                        className="group hover:s flex flex-col overflow-hidden rounded-xl border bg-card text-left transition-all hover:border-primary hover:shadow-md"
+                        className="group cursor-pointer flex flex-col overflow-hidden rounded-xl border bg-card text-left transition-all hover:border-primary hover:shadow-md"
                     >
                         {product.image ? (
                             <img

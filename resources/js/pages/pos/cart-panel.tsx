@@ -32,7 +32,7 @@ export default function CartPanel({
                 {items.length > 0 && (
                     <button
                         onClick={onClear}
-                        className="text-xs text-muted-foreground hover:text-destructive"
+                        className="cursor-pointer text-xs text-muted-foreground hover:text-destructive"
                     >
                         Clear all
                     </button>
@@ -70,7 +70,10 @@ export default function CartPanel({
                                 }
                                 className="w-16 text-center"
                             />
-                            <button onClick={() => onRemove(item.product.id)}>
+                            <button
+                                onClick={() => onRemove(item.product.id)}
+                                className="cursor-pointer"
+                            >
                                 <Trash2 className="h-4 w-4 text-destructive" />
                             </button>
                         </div>
