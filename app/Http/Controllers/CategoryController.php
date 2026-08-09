@@ -22,6 +22,7 @@ class CategoryController extends Controller
             'categories' => Category::withCount('products')->orderBy('name')->get(),
         ]);
     }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -34,7 +35,7 @@ class CategoryController extends Controller
      * Store a newly created resource in storage.
      */
     // Define the controller method to handle creating a new category, using a Form Request for automatic validation
-    public function store(StoreCategoryRequest $request) : RedirectResponse
+    public function store(StoreCategoryRequest $request): RedirectResponse
     {
         // Create and save a new Category record using the validated request data
         Category::create($request->validated());
@@ -62,9 +63,10 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCategoryRequest $request, Category $category) : RedirectResponse
+    public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
     {
         $category->update($request->validated());
+
         return redirect()->route('categories.index');
     }
 
@@ -74,6 +76,7 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $category->delete();
+
         return redirect()->route('categories.index');
     }
 }

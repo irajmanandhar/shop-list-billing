@@ -15,15 +15,15 @@ class CheckoutController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'items'              => ['required', 'array', 'min:1'],
+            'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'exists:products,id'],
-            'items.*.quantity'   => ['required', 'integer', 'min:1'],
-            'cash_tendered'      => ['required', 'numeric', 'min:0.01'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'cash_tendered' => ['required', 'numeric', 'min:0.01'],
         ]);
 
         $saleId = DB::transaction(
             function () use ($validated, $request) {
-                $total     = 0;
+                $total = 0;
                 $saleItems = [];
 
                 foreach ($validated['items'] as $item) {
@@ -35,14 +35,14 @@ class CheckoutController extends Controller
                         ]);
                     }
 
-                    $subtotal     = (float) $product->price * $item['quantity'];
-                    $total       += $subtotal;
+                    $subtotal = (float) $product->price * $item['quantity'];
+                    $total += $subtotal;
                     $saleItems[] = [
-                        'product_id'   => $product->id,
+                        'product_id' => $product->id,
                         'product_name' => $product->name,
-                        'unit_price'   => $product->price,
-                        'quantity'     => $item['quantity'],
-                        'subtotal'     => round($subtotal, 2),
+                        'unit_price' => $product->price,
+                        'quantity' => $item['quantity'],
+                        'subtotal' => round($subtotal, 2),
                     ];
 
                     $product->decrement('stock', $item['quantity']);
@@ -57,13 +57,14 @@ class CheckoutController extends Controller
                 }
 
                 $sale = Sale::create([
-                    'user_id'       => $request->user()->id,
-                    'total'         => round($total, 2),
+                    'user_id' => $request->user()->id,
+                    'total' => round($total, 2),
                     'cash_tendered' => $cash,
                     'change_amount' => round($cash - $total, 2),
                 ]);
 
                 $sale->items()->createMany($saleItems);
+
                 return $sale->id;
             }
         );

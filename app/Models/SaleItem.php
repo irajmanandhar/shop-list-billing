@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SaleItem extends Model
 {
     protected $table = 'sales_items';
-    
-    public function sale() : BelongsTo
+
+    public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);
     }
