@@ -1,0 +1,17 @@
+.git
+.env
+.env.production
+.auth.json
+vendor
+node_modules
+public/build
+public/hot
+public/fonts-manifest.dev.json
+database/database.sqlite
+tests
+Dockerfile
+.dockerignore
+.github
+readme.md
+.idea
+.vscode
