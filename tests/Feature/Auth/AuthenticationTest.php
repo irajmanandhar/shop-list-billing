@@ -53,6 +53,28 @@ test('users can not authenticate with invalid password', function () {
     $this->assertGuest();
 });
 
+test('login reports an unknown email address', function () {
+    $response = $this->post(route('login.store'), [
+        'email' => 'nobody@example.com',
+        'password' => 'password',
+    ]);
+
+    $response->assertSessionHasErrors(['email' => 'No account found with this email address.']);
+    $this->assertGuest();
+});
+
+test('login reports an incorrect password', function () {
+    $user = User::factory()->create();
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ]);
+
+    $response->assertSessionHasErrors(['password' => 'The password you entered is incorrect.']);
+    $this->assertGuest();
+});
+
 test('users can logout', function () {
     $user = User::factory()->create();
 
