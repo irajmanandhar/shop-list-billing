@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -28,10 +29,17 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Demo Manager', 'password' => Hash::make('password'), 'email_verified_at' => now()],
         );
 
-        if (Product::exists()) {
-            return;
+        if (Product::doesntExist()) {
+            $this->seedCatalog();
         }
 
+        if (Sale::doesntExist()) {
+            DB::transaction(fn () => $this->seedSales($user));
+        }
+    }
+
+    private function seedCatalog(): void
+    {
         foreach (self::CATALOG as $categoryName => $items) {
             $category = Category::create(['name' => $categoryName, 'description' => "$categoryName menu"]);
 
@@ -47,8 +55,6 @@ class DatabaseSeeder extends Seeder
         // A couple of items are nearly out so the low-stock widgets have data.
         Product::whereIn('name', ['Cinnamon Roll', 'Matcha Latte'])->update(['stock' => 3]);
         Product::where('name', 'Banana Bread')->update(['stock' => 0]);
-
-        $this->seedSales($user);
     }
 
     /** 30 days of plausible traffic, busier on weekends and mornings. */
@@ -82,7 +88,10 @@ class DatabaseSeeder extends Seeder
                 $cash = random_int(0, 2) === 0;
                 $tendered = $cash ? (int) (ceil($total / 500) * 500) : $total;
 
-                $sale = Sale::create([
+                $stamp = $date->copy()->setTime(random_int(7, 19), random_int(0, 59));
+                $sale = (new Sale)->forceFill([
+                    'created_at' => $stamp,
+                    'updated_at' => $stamp,
                     'user_id' => $user->id,
                     'subtotal' => $subtotal / 100,
                     'tax' => $tax / 100,
@@ -92,10 +101,8 @@ class DatabaseSeeder extends Seeder
                     'payment_method' => $cash ? 'cash' : 'card',
                     'status' => random_int(1, 40) === 1 ? 'voided' : 'completed',
                 ]);
+                $sale->save();
                 $sale->items()->createMany($lines);
-
-                $stamp = $date->copy()->setTime(random_int(7, 19), random_int(0, 59));
-                $sale->forceFill(['created_at' => $stamp, 'updated_at' => $stamp])->saveQuietly();
             }
         }
     }

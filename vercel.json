@@ -6,6 +6,8 @@
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/api/index.php" }
   ],
+  "buildCommand": "echo assets are prebuilt",
+  "installCommand": "echo skip",
   "outputDirectory": "public",
   "env": {
     "APP_ENV": "production",
