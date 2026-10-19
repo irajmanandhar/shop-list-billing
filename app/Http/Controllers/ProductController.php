@@ -45,7 +45,7 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
+            $imagePath = $request->file('image')->store('products', config('pos.image_disk'));
             $data['image'] = $imagePath;
         }
 
@@ -79,9 +79,9 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
             if ($product->image) {
-                Storage::disk('public')->delete($product->image);
+                Storage::disk(config('pos.image_disk'))->delete($product->image);
             }
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = $request->file('image')->store('products', config('pos.image_disk'));
         }
 
         $product->update($data);
@@ -95,7 +95,7 @@ class ProductController extends Controller
     public function destroy(Product $product): RedirectResponse
     {
         if ($product->image) {
-            Storage::disk('public')->delete($product->image);
+            Storage::disk(config('pos.image_disk'))->delete($product->image);
         }
 
         $product->delete();

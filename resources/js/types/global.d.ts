@@ -13,6 +13,7 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            pos: { tax_rate: number; demo: boolean };
             [key: string]: unknown;
         };
     }

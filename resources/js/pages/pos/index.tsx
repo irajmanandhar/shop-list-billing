@@ -1,6 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { LayoutGrid, Search } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import type { Category, Product } from '@/types';
 import CartPanel from './cart-panel';
@@ -23,6 +23,8 @@ function initialCategory(
 }
 
 export default function PosIndex({ products, categories }: Props) {
+    const taxRate = usePage().props.pos.tax_rate;
+    const searchRef = useRef<HTMLInputElement>(null);
     const [search, setSearch] = useState('');
     const [activeCategory, setActiveCategory] = useState<number | null>(() =>
         initialCategory(
@@ -30,9 +32,39 @@ export default function PosIndex({ products, categories }: Props) {
             categories,
         ),
     );
-    const { items, subtotal, addItem, removeItem, setQuantity, clear } =
-        useCart();
+    const {
+        items,
+        totals,
+        count,
+        discountPercent,
+        setDiscountPercent,
+        addItem,
+        removeItem,
+        setQuantity,
+        clear,
+    } = useCart(taxRate);
     const [showCheckout, setShowCheckout] = useState(false);
+
+    // "/" focuses search, F2 opens checkout.
+    useEffect(() => {
+        function onKey(e: KeyboardEvent) {
+            const typing = ['INPUT', 'TEXTAREA'].includes(
+                (e.target as HTMLElement).tagName,
+            );
+
+            if (e.key === '/' && !typing) {
+                e.preventDefault();
+                searchRef.current?.focus();
+            } else if (e.key === 'F2' && count > 0) {
+                e.preventDefault();
+                setShowCheckout(true);
+            }
+        }
+
+        window.addEventListener('keydown', onKey);
+
+        return () => window.removeEventListener('keydown', onKey);
+    }, [count]);
 
     const filtered = products.filter(
         (p) =>
@@ -60,7 +92,8 @@ export default function PosIndex({ products, categories }: Props) {
                         <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             className="pl-9"
-                            placeholder="Search products..."
+                            ref={searchRef}
+                            placeholder="Search products...  ( / )"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -95,11 +128,21 @@ export default function PosIndex({ products, categories }: Props) {
                     ))}
                 </div>
                 {/* Main area */}
-                <div className="flex flex-1 overflow-hidden">
-                    <ProductGrid products={filtered} onAdd={addItem} />
+                <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+                    <ProductGrid
+                        products={filtered}
+                        onAdd={addItem}
+                        inCart={(id) =>
+                            items.find((i) => i.product.id === id)?.quantity ??
+                            0
+                        }
+                    />
                     <CartPanel
                         items={items}
-                        subtotal={subtotal}
+                        totals={totals}
+                        taxRate={taxRate}
+                        discountPercent={discountPercent}
+                        onDiscount={setDiscountPercent}
                         onRemove={removeItem}
                         onSetQuantity={setQuantity}
                         onClear={clear}
@@ -110,7 +153,8 @@ export default function PosIndex({ products, categories }: Props) {
             <CheckoutDialog
                 open={showCheckout}
                 items={items}
-                subtotal={subtotal}
+                totals={totals}
+                discountPercent={discountPercent}
                 onSuccess={clear}
                 onClose={() => setShowCheckout(false)}
             />

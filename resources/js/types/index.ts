@@ -16,6 +16,7 @@ export interface Product {
     price: string;
     stock: number;
     image: string | null;
+    image_url: string | null;
     is_active: boolean;
     category: Category;
 }
@@ -38,7 +39,12 @@ export interface Sale {
     total: string;
     cash_tendered: string;
     change_amount: string;
-    status: string;
+    subtotal: string;
+    discount: string;
+    tax: string;
+    payment_method: 'cash' | 'card';
+    status: 'completed' | 'voided';
     created_at: string;
+    user?: { id: number; name: string } | null;
     items: SaleItem[];
 }

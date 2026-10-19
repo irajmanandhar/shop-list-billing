@@ -14,6 +14,7 @@ class DashboardController extends Controller
     public function index(): Response
     {
         $today = today();
+        $low = config('pos.low_stock');
 
         $todaySales = Sale::whereDate('created_at', $today)
             ->where('status', 'completed')
@@ -70,7 +71,7 @@ class DashboardController extends Controller
             ->get();
 
         // low stock
-        $lowStockProducts = Product::where('stock', '<=', 5)
+        $lowStockProducts = Product::where('stock', '<=', $low)
             ->orderBy('stock')
             ->limit(6)
             ->get(['id', 'name', 'stock', 'is_active']);
@@ -80,7 +81,7 @@ class DashboardController extends Controller
                 'today_revenue' => $todaySales->sum('total'),
                 'today_transactions' => $todaySales->count(),
                 'total_products' => Product::where('is_active', true)->count(),
-                'low_stock_count' => Product::where('stock', '<=', 5)->count(),
+                'low_stock_count' => Product::where('stock', '<=', $low)->count(),
             ],
             'revenue_history' => $revenueHistory,
             'top_products' => $topProduct,

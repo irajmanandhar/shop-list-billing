@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, router, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
@@ -18,6 +18,8 @@ type Props = {
 };
 
 export default function Login({ status, canResetPassword }: Props) {
+    const { pos } = usePage().props;
+
     return (
         <>
             <Head title="Log in" />
@@ -101,6 +103,17 @@ export default function Login({ status, canResetPassword }: Props) {
                     </>
                 )}
             </Form>
+
+            {pos.demo && (
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-4 w-full"
+                    onClick={() => router.post('/demo-login')}
+                >
+                    Try the live demo — no sign-up
+                </Button>
+            )}
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">

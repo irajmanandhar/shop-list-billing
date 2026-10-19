@@ -1,0 +1,9 @@
+.git
+.env
+node_modules
+vendor
+tests
+database/database.sqlite
+storage/logs
+storage/framework
+Dockerfile

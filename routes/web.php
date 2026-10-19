@@ -5,6 +5,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SaleController;
+use App\Models\User;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,7 +23,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('categories', CategoryController::class)->except(['create', 'show', 'edit']);
     Route::get('pos', [PosController::class, 'index'])->name('pos.index');
     Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout');
+    Route::get('sales', [SaleController::class, 'index'])->name('sales.index');
+    Route::post('sales/{sale}/void', [SaleController::class, 'void'])->name('sales.void');
     Route::get('receipt/{sale}', [CheckoutController::class, 'receipt'])->name('receipt');
 });
+
+if (config('pos.demo')) {
+    Route::post('demo-login', function () {
+        auth()->login(User::where('email', 'demo@pulsepos.test')->firstOrFail());
+        request()->session()->regenerate();
+
+        return Redirect::route('dashboard');
+    })->middleware('guest')->name('demo.login');
+}
 
 require __DIR__.'/settings.php';
