@@ -29,7 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 if (config('pos.demo')) {
-    Route::post('demo-login', function () {
+    // GET /demo is a shareable one-click entry (portfolio link); POST backs the login button.
+    Route::match(['get', 'post'], 'demo', function () {
         auth()->login(User::where('email', 'demo@pulsepos.test')->firstOrFail());
         request()->session()->regenerate();
 

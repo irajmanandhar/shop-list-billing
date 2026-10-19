@@ -78,3 +78,7 @@ it('voids a sale once and restores stock', function () {
 it('requires authentication', function () {
     $this->post('/checkout', checkout())->assertRedirect('/login');
 });
+
+it('hides /demo unless demo mode is on', function () {
+    $this->get('/demo')->assertNotFound();
+});

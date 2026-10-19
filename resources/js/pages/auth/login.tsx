@@ -109,7 +109,7 @@ export default function Login({ status, canResetPassword }: Props) {
                     type="button"
                     variant="outline"
                     className="mt-4 w-full"
-                    onClick={() => router.post('/demo-login')}
+                    onClick={() => router.post('/demo')}
                 >
                     Try the live demo — no sign-up
                 </Button>
