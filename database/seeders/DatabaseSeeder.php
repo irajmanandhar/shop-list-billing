@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
         }
 
         if (Sale::doesntExist()) {
-            DB::transaction(fn () => $this->seedSales($user));
+            $this->seedSales($user);
         }
     }
 
@@ -61,20 +61,24 @@ class DatabaseSeeder extends Seeder
     private function seedSales(User $user): void
     {
         $products = Product::all();
+        $saleId = (int) Sale::max('id');
+        $sales = [];
+        $items = [];
 
         for ($day = 29; $day >= 0; $day--) {
             $date = today()->subDays($day);
             $count = random_int(14, 30) + ($date->isWeekend() ? 12 : 0);
 
             for ($n = 0; $n < $count; $n++) {
+                $saleId++;
                 $subtotal = 0;
-                $lines = [];
 
-                foreach ($products->random(random_int(1, 4)) as $product) {
+                foreach ($products->random(min(random_int(1, 4), $products->count())) as $product) {
                     $qty = random_int(1, 3);
                     $line = (int) round($product->price * 100) * $qty;
                     $subtotal += $line;
-                    $lines[] = [
+                    $items[] = [
+                        'sale_id' => $saleId,
                         'product_id' => $product->id,
                         'product_name' => $product->name,
                         'unit_price' => $product->price,
@@ -87,23 +91,39 @@ class DatabaseSeeder extends Seeder
                 $total = $subtotal + $tax;
                 $cash = random_int(0, 2) === 0;
                 $tendered = $cash ? (int) (ceil($total / 500) * 500) : $total;
-
                 $stamp = $date->copy()->setTime(random_int(7, 19), random_int(0, 59));
-                $sale = (new Sale)->forceFill([
-                    'created_at' => $stamp,
-                    'updated_at' => $stamp,
+
+                $sales[] = [
+                    'id' => $saleId,
                     'user_id' => $user->id,
                     'subtotal' => $subtotal / 100,
+                    'discount' => 0,
                     'tax' => $tax / 100,
                     'total' => $total / 100,
                     'cash_tendered' => $tendered / 100,
                     'change_amount' => ($tendered - $total) / 100,
                     'payment_method' => $cash ? 'cash' : 'card',
                     'status' => random_int(1, 40) === 1 ? 'voided' : 'completed',
-                ]);
-                $sale->save();
-                $sale->items()->createMany($lines);
+                    'created_at' => $stamp,
+                    'updated_at' => $stamp,
+                ];
             }
+        }
+
+        foreach (array_chunk($sales, 200) as $chunk) {
+            DB::table('sales')->insert($chunk);
+        }
+
+        foreach (array_chunk($items, 400) as $chunk) {
+            DB::table('sales_items')->insert(array_map(
+                fn (array $row) => $row + ['created_at' => now(), 'updated_at' => now()],
+                $chunk,
+            ));
+        }
+
+        // Explicit ids bypass the sequence on Postgres; move it past them.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("SELECT setval(pg_get_serial_sequence('sales', 'id'), (SELECT MAX(id) FROM sales))");
         }
     }
 }
